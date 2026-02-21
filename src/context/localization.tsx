@@ -60,7 +60,8 @@ export function LocalizationProvider({ children }: { children: ReactNode }) {
     // NOTE: keep these as explicit imports so Next can bundle them.
     const loaders: Record<string, () => Promise<Record<string, string>>> = {
       es: async () => (await import('@/src/localization/translations/es.json')).default as Record<string, string>,
-      fr: async () => (await import('@/src/localization/translations/fr.json')).default as Record<string, string>
+      fr: async () => (await import('@/src/localization/translations/fr.json')).default as Record<string, string>,
+      nl: async () => (await import('@/src/localization/translations/nl.json')).default as Record<string, string>
     };
 
     const supported = SUPPORTED_LANGUAGES.includes(lang);
