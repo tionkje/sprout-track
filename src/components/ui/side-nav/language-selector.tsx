@@ -24,6 +24,7 @@ const LANGUAGE_NAMES: Record<string, { code: string; name: string }> = {
   en: { code: 'EN', name: 'English' },
   es: { code: 'ES', name: 'Español' },
   fr: { code: 'FR', name: 'Français' },
+  nl: { code: 'NL', name: 'Nederlands' },
 };
 
 /**
