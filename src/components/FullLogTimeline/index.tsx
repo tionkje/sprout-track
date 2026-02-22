@@ -19,6 +19,7 @@ import { getActivityEndpoint, getActivityTime } from '@/src/components/Timeline/
 import { PumpLogResponse, MedicineLogResponse } from '@/app/api/types';
 import { cn } from '@/src/lib/utils';
 import styles from './full-log-timeline.styles';
+import { useLocalization } from '@/src/context/localization';
 import './full-log-timeline.css';
 
 /**
@@ -34,6 +35,7 @@ const FullLogTimeline: React.FC<FullLogTimelineProps> = ({
   endDate,
   onDateRangeChange,
 }) => {
+  const { t } = useLocalization();
   const [settings, setSettings] = useState<Settings | null>(null);
   const [selectedActivity, setSelectedActivity] = useState<ActivityType | null>(null);
   const [activeFilter, setActiveFilter] = useState<FilterType>(null);
@@ -177,7 +179,7 @@ const FullLogTimeline: React.FC<FullLogTimelineProps> = ({
       if (activity.side && activity.side.toLowerCase().includes(searchLower)) return true;
       if (activity.food && activity.food.toLowerCase().includes(searchLower)) return true;
       if (activity.notes && activity.notes.toLowerCase().includes(searchLower)) return true;
-      if (activity.bottleType && activity.bottleType.toLowerCase().includes(searchLower)) return true;
+      if (activity.bottleType && (activity.bottleType.toLowerCase().includes(searchLower) || t(activity.bottleType.replace('\\', '/')).toLowerCase().includes(searchLower))) return true;
       return false;
     }
     
@@ -233,7 +235,7 @@ const FullLogTimeline: React.FC<FullLogTimelineProps> = ({
     }
     
     return false;
-  }, []);
+  }, [t]);
 
   // Filter and sort activities
   const sortedActivities = useMemo(() => {

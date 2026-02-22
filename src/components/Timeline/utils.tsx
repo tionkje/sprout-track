@@ -255,7 +255,7 @@ export const getActivityDetails = (activity: ActivityType, settings: Settings | 
         const bottleType = (activity as any).bottleType;
         details.push({ 
           label: t('Bottle Type'), 
-          value: bottleType.replace('\\', '/') 
+          value: t(bottleType.replace('\\', '/'))
         });
       }
 
@@ -585,7 +585,7 @@ export const getActivityDescription = (activity: ActivityType, settings: Setting
         
         // Add bottle type if available
         if ((activity as any).bottleType) {
-          const bottleType = (activity as any).bottleType.replace('\\', '/');
+          const bottleType = t((activity as any).bottleType.replace('\\', '/'));
           details += ` (${bottleType})`;
         }
       } else if (activity.type === 'SOLIDS') {
