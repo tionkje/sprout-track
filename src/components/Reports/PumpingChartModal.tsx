@@ -503,6 +503,16 @@ const PumpingChartModal: React.FC<PumpingChartModalProps> = ({
                     <Line
                       yAxisId="total"
                       type="monotone"
+                      dataKey="dayTotal"
+                      stroke="#14b8a6"
+                      strokeWidth={3}
+                      dot={{ r: 4, fill: '#14b8a6' }}
+                      activeDot={{ r: 6, fill: '#0f766e' }}
+                      name="Total"
+                    />
+                    <Line
+                      yAxisId="total"
+                      type="monotone"
                       dataKey="leftTotal"
                       stroke="#6366f1"
                       strokeWidth={2}
