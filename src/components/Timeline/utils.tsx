@@ -340,7 +340,7 @@ export const getActivityDetails = (activity: ActivityType, settings: Settings | 
         const bottleType = (activity as any).bottleType;
         details.push({ 
           label: t('Bottle Type'), 
-          value: bottleType.replace('\\', '/') 
+          value: t(bottleType.replace('\\', '/'))
         });
       }
 
