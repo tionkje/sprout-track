@@ -343,6 +343,7 @@ const FeedingChartModal: React.FC<FeedingChartModalProps> = ({
                         dataKey={type}
                         stackId="bottles"
                         fill={bottleData.colors[index]}
+                        name={t(type.replace('\\', '/'))}
                       />
                     ))}
                   </ComposedChart>
