@@ -526,8 +526,9 @@ const TimelineV2DailyStats: React.FC<TimelineV2DailyStatsProps> = ({
   }, [activities, date, t]);
 
   const formatDate = (date: Date): string => {
-    return date.toLocaleDateString('en-US', { 
-      month: 'short', 
+    return date.toLocaleDateString('en-US', {
+      weekday: 'short',
+      month: 'short',
       day: 'numeric',
       year: 'numeric'
     });
@@ -554,7 +555,7 @@ const TimelineV2DailyStats: React.FC<TimelineV2DailyStatsProps> = ({
                 <Button 
                   variant="ghost" 
                   size="sm"
-                  className="h-8 px-3 text-sm font-medium text-gray-800 hover:bg-gray-100 min-w-[140px]"
+                  className="h-8 px-3 text-sm font-medium text-gray-800 hover:bg-gray-100 min-w-[180px]"
                 >
                   {formatDate(date)}
                 </Button>
