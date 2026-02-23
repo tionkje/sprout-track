@@ -227,14 +227,20 @@ export function ActivityTileGroup({
             // Mark settings as loaded AFTER state has been updated
             setTimeout(() => {
               setSettingsLoaded(true);
-              
+
               // Store the original settings in a ref for comparison
               // This helps us determine if settings were modified by the user
               originalOrderRef.current = originalOrder;
               originalVisibleRef.current = Array.from(originalVisible) as ActivityType[];
-              
+
               // Reset the modified flag since we just loaded settings
               setSettingsModified(false);
+
+              // Reset scroll position — the order change can cause snap-mandatory
+              // to settle on a non-zero snap point
+              if (scrollContainerRef.current) {
+                scrollContainerRef.current.scrollLeft = 0;
+              }
             }, 0);
           } else {
             console.error('Failed to load settings:', data.error || 'Unknown error');
