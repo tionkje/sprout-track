@@ -104,6 +104,7 @@ export function ActivityTileGroup({
   // State for drag and drop
   const [draggedActivity, setDraggedActivity] = useState<ActivityType | null>(null);
   const touchTimeoutRef = React.useRef<NodeJS.Timeout | null>(null); // Ref for touch start timeout
+  const scrollContainerRef = React.useRef<HTMLDivElement>(null);
   
   // State for tracking if settings have been loaded
   const [settingsLoaded, setSettingsLoaded] = useState(false);
@@ -204,14 +205,20 @@ export function ActivityTileGroup({
             // Mark settings as loaded AFTER state has been updated
             setTimeout(() => {
               setSettingsLoaded(true);
-              
+
               // Store the original settings in a ref for comparison
               // This helps us determine if settings were modified by the user
               originalOrderRef.current = originalOrder;
               originalVisibleRef.current = Array.from(originalVisible) as ActivityType[];
-              
+
               // Reset the modified flag since we just loaded settings
               setSettingsModified(false);
+
+              // Reset scroll position — the order change can cause snap-mandatory
+              // to settle on a non-zero snap point
+              if (scrollContainerRef.current) {
+                scrollContainerRef.current.scrollLeft = 0;
+              }
             }, 0);
           } else {
             console.error('Failed to load settings:', data.error || 'Unknown error');
@@ -694,7 +701,7 @@ export function ActivityTileGroup({
 
   return (
     <div className="activity-tile-group">
-      <div className="flex overflow-x-auto border-0 no-scrollbar snap-x snap-mandatory relative p-2 gap-1">
+      <div ref={scrollContainerRef} className="flex overflow-x-auto border-0 no-scrollbar snap-x snap-mandatory relative p-2 gap-1">
         {/* Render activity tiles based on order and visibility */}
         {activityOrder.map(activity => renderActivityTile(activity))}
 
