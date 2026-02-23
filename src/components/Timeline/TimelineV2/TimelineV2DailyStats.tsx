@@ -664,7 +664,7 @@ const TimelineV2DailyStats: React.FC<TimelineV2DailyStatsProps> = ({
                 <Button 
                   variant="ghost" 
                   size="sm"
-                  className="h-8 px-3 text-sm font-medium text-gray-800 hover:bg-gray-100 min-w-[140px]"
+                  className="h-8 px-3 text-sm font-medium text-gray-800 hover:bg-gray-100 min-w-[180px]"
                 >
                   {formatDateDisplay(date)}
                 </Button>
