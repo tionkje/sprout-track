@@ -124,9 +124,9 @@ const StatsTab: React.FC<StatsTabProps> = ({
         },
         feeding: {
           totalFeeds: 0,
-          bottleFeeds: { count: 0, amounts: {}, avgByType: [] },
-          breastFeeds: { count: 0, leftMinutes: 0, rightMinutes: 0, leftCount: 0, rightCount: 0, avgLeftMinutes: 0, avgRightMinutes: 0 },
-          solidsFeeds: { count: 0, amounts: {}, avgByFood: [] },
+          bottleFeeds: { count: 0, amounts: {}, avgByType: [], avgPerSession: 0, primaryUnit: 'oz' },
+          breastFeeds: { count: 0, leftMinutes: 0, rightMinutes: 0, leftCount: 0, rightCount: 0, avgLeftMinutes: 0, avgRightMinutes: 0, avgPerSessionMinutes: 0 },
+          solidsFeeds: { count: 0, amounts: {}, avgByFood: [], avgPerSession: 0, primaryUnit: 'g' },
         },
         diaper: {
           totalChanges: 0,
@@ -187,6 +187,8 @@ const StatsTab: React.FC<StatsTabProps> = ({
     let totalFeeds = 0;
     let bottleFeedCount = 0;
     const bottleAmounts: Record<string, number> = {};
+    let totalBottleAmount = 0;
+    const bottleUnitCounts: Record<string, number> = {};
     // Track by bottle type for averages
     const bottleByType: Record<string, { count: number; totalAmount: number; unit: string }> = {};
     let breastFeedCount = 0;
@@ -196,6 +198,8 @@ const StatsTab: React.FC<StatsTabProps> = ({
     let rightBreastCount = 0;
     let solidsFeedCount = 0;
     const solidsAmounts: Record<string, number> = {};
+    let totalSolidsAmount = 0;
+    const solidsUnitCounts: Record<string, number> = {};
     // Track by food type for averages
     const solidsByFood: Record<string, { count: number; totalAmount: number; unit: string }> = {};
 
@@ -337,6 +341,8 @@ const StatsTab: React.FC<StatsTabProps> = ({
               const unit = feedActivity.unitAbbr || 'oz';
               if (!bottleAmounts[unit]) bottleAmounts[unit] = 0;
               bottleAmounts[unit] += feedActivity.amount;
+              totalBottleAmount += feedActivity.amount;
+              bottleUnitCounts[unit] = (bottleUnitCounts[unit] || 0) + 1;
 
               // Track by bottle type
               const bottleType = feedActivity.bottleType || 'Uncategorized';
@@ -370,6 +376,8 @@ const StatsTab: React.FC<StatsTabProps> = ({
               const unit = feedActivity.unitAbbr || 'g';
               if (!solidsAmounts[unit]) solidsAmounts[unit] = 0;
               solidsAmounts[unit] += feedActivity.amount;
+              totalSolidsAmount += feedActivity.amount;
+              solidsUnitCounts[unit] = (solidsUnitCounts[unit] || 0) + 1;
 
               // Track by food type
               const foodType = feedActivity.food || 'Uncategorized';
@@ -557,6 +565,13 @@ const StatsTab: React.FC<StatsTabProps> = ({
       count: data.count,
     })).sort((a, b) => b.count - a.count);
 
+    // Per-session averages
+    const bottleAvgPerSession = bottleFeedCount > 0 ? totalBottleAmount / bottleFeedCount : 0;
+    const bottlePrimaryUnit = Object.entries(bottleUnitCounts).sort((a, b) => b[1] - a[1])[0]?.[0] || 'oz';
+    const breastAvgPerSessionMinutes = breastFeedCount > 0 ? (leftBreastMinutes + rightBreastMinutes) / breastFeedCount : 0;
+    const solidsAvgPerSession = solidsFeedCount > 0 ? totalSolidsAmount / solidsFeedCount : 0;
+    const solidsPrimaryUnit = Object.entries(solidsUnitCounts).sort((a, b) => b[1] - a[1])[0]?.[0] || 'g';
+
     // Calculate average diapers per day
     const avgWetPerDay = daysInRange > 0 ? Math.round((wetCount / daysInRange) * 10) / 10 : 0;
     const avgPoopPerDay = daysInRange > 0 ? Math.round((poopCount / daysInRange) * 10) / 10 : 0;
@@ -603,7 +618,7 @@ const StatsTab: React.FC<StatsTabProps> = ({
       },
       feeding: {
         totalFeeds,
-        bottleFeeds: { count: bottleFeedCount, amounts: bottleAmounts, avgByType: bottleAvgByType },
+        bottleFeeds: { count: bottleFeedCount, amounts: bottleAmounts, avgByType: bottleAvgByType, avgPerSession: bottleAvgPerSession, primaryUnit: bottlePrimaryUnit },
         breastFeeds: {
           count: breastFeedCount,
           leftMinutes: leftBreastMinutes,
@@ -612,8 +627,9 @@ const StatsTab: React.FC<StatsTabProps> = ({
           rightCount: rightBreastCount,
           avgLeftMinutes: avgLeftBreastMinutes,
           avgRightMinutes: avgRightBreastMinutes,
+          avgPerSessionMinutes: breastAvgPerSessionMinutes,
         },
-        solidsFeeds: { count: solidsFeedCount, amounts: solidsAmounts, avgByFood: solidsAvgByFood },
+        solidsFeeds: { count: solidsFeedCount, amounts: solidsAmounts, avgByFood: solidsAvgByFood, avgPerSession: solidsAvgPerSession, primaryUnit: solidsPrimaryUnit },
       },
       diaper: {
         totalChanges: totalDiaperChanges,

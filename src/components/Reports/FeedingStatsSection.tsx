@@ -119,6 +119,57 @@ const FeedingStatsSection: React.FC<FeedingStatsSectionProps> = ({ stats, activi
                 )}
               </CardContent>
             </Card>
+
+            {stats.bottleFeeds.count > 0 && (
+              <Card
+                className={cn(styles.statCard, "reports-stat-card cursor-pointer")}
+                onClick={() => {
+                  setChartMetric('bottlePerSession');
+                  setChartModalOpen(true);
+                }}
+              >
+                <CardContent className="p-4">
+                  <div className={cn(styles.statCardValue, "reports-stat-card-value")}>
+                    {stats.bottleFeeds.avgPerSession.toFixed(1)} {stats.bottleFeeds.primaryUnit}
+                  </div>
+                  <div className={cn(styles.statCardLabel, "reports-stat-card-label")}>{t('Avg Per Bottle Feed')}</div>
+                </CardContent>
+              </Card>
+            )}
+
+            {stats.breastFeeds.count > 0 && (
+              <Card
+                className={cn(styles.statCard, "reports-stat-card cursor-pointer")}
+                onClick={() => {
+                  setChartMetric('breastPerSession');
+                  setChartModalOpen(true);
+                }}
+              >
+                <CardContent className="p-4">
+                  <div className={cn(styles.statCardValue, "reports-stat-card-value")}>
+                    {formatMinutes(stats.breastFeeds.avgPerSessionMinutes)}
+                  </div>
+                  <div className={cn(styles.statCardLabel, "reports-stat-card-label")}>{t('Avg Per Breast Feed')}</div>
+                </CardContent>
+              </Card>
+            )}
+
+            {stats.solidsFeeds.count > 0 && (
+              <Card
+                className={cn(styles.statCard, "reports-stat-card cursor-pointer")}
+                onClick={() => {
+                  setChartMetric('solidsPerSession');
+                  setChartModalOpen(true);
+                }}
+              >
+                <CardContent className="p-4">
+                  <div className={cn(styles.statCardValue, "reports-stat-card-value")}>
+                    {stats.solidsFeeds.avgPerSession.toFixed(1)} {stats.solidsFeeds.primaryUnit}
+                  </div>
+                  <div className={cn(styles.statCardLabel, "reports-stat-card-label")}>{t('Avg Per Solids Feed')}</div>
+                </CardContent>
+              </Card>
+            )}
           </div>
         </AccordionContent>
       </AccordionItem>

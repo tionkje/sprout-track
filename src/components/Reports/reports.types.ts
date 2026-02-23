@@ -305,6 +305,8 @@ export interface FeedingStats {
     count: number;
     amounts: Record<string, number>; // unit -> total amount
     avgByType: BottleAvgByType[];
+    avgPerSession: number;
+    primaryUnit: string;
   };
   breastFeeds: {
     count: number;
@@ -314,11 +316,14 @@ export interface FeedingStats {
     rightCount: number;
     avgLeftMinutes: number;
     avgRightMinutes: number;
+    avgPerSessionMinutes: number;
   };
   solidsFeeds: {
     count: number;
     amounts: Record<string, number>; // unit -> total amount
     avgByFood: SolidsAvgByFood[];
+    avgPerSession: number;
+    primaryUnit: string;
   };
 }
 

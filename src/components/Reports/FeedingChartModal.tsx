@@ -23,7 +23,7 @@ import { useLocalization } from '@/src/context/localization';
 import { useTimezone } from '@/app/context/timezone';
 import { formatDateShort, formatDateDisplay } from '@/src/utils/dateFormat';
 
-export type FeedingChartMetric = 'bottle' | 'breast' | 'solids';
+export type FeedingChartMetric = 'bottle' | 'breast' | 'solids' | 'bottlePerSession' | 'breastPerSession' | 'solidsPerSession';
 
 interface FeedingChartModalProps {
   open: boolean;
@@ -260,6 +260,120 @@ const FeedingChartModal: React.FC<FeedingChartModalProps> = ({
     return { data: combinedData, foodTypes, colors };
   }, [activities, dateRange, metric, dateFormat]);
 
+  // Calculate bottle per-session data (avg amount per feed per day)
+  const bottlePerSessionData = useMemo(() => {
+    if (!activities.length || !dateRange.from || !dateRange.to || metric !== 'bottlePerSession') {
+      return [];
+    }
+
+    const startDate = new Date(dateRange.from);
+    startDate.setHours(0, 0, 0, 0);
+    const endDate = new Date(dateRange.to);
+    endDate.setHours(23, 59, 59, 999);
+
+    const byDay: Record<string, { totalAmount: number; count: number }> = {};
+
+    activities.forEach((activity) => {
+      if ('type' in activity && 'time' in activity) {
+        const feedActivity = activity as any;
+        if (feedActivity.type !== 'BOTTLE' || !feedActivity.amount) return;
+        const feedTime = new Date(feedActivity.time);
+        if (feedTime < startDate || feedTime > endDate) return;
+        const dayKey = feedTime.toISOString().split('T')[0];
+        if (!byDay[dayKey]) byDay[dayKey] = { totalAmount: 0, count: 0 };
+        byDay[dayKey].totalAmount += feedActivity.amount;
+        byDay[dayKey].count++;
+      }
+    });
+
+    return Object.entries(byDay)
+      .map(([date, data]) => ({
+        date,
+        label: new Date(date + 'T12:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+        avg: data.count > 0 ? data.totalAmount / data.count : 0,
+      }))
+      .sort((a, b) => (a.date < b.date ? -1 : 1));
+  }, [activities, dateRange, metric]);
+
+  // Calculate breast per-session data (avg duration per feed per day)
+  const breastPerSessionData = useMemo(() => {
+    if (!activities.length || !dateRange.from || !dateRange.to || metric !== 'breastPerSession') {
+      return [];
+    }
+
+    const startDate = new Date(dateRange.from);
+    startDate.setHours(0, 0, 0, 0);
+    const endDate = new Date(dateRange.to);
+    endDate.setHours(23, 59, 59, 999);
+
+    const byDay: Record<string, { totalMinutes: number; count: number }> = {};
+
+    activities.forEach((activity) => {
+      if ('type' in activity && 'time' in activity) {
+        const feedActivity = activity as any;
+        if (feedActivity.type !== 'BREAST') return;
+        const feedTime = new Date(feedActivity.time);
+        if (feedTime < startDate || feedTime > endDate) return;
+
+        let feedMinutes = 0;
+        if (feedActivity.feedDuration) {
+          feedMinutes = Math.floor(feedActivity.feedDuration / 60);
+        } else if (feedActivity.amount) {
+          feedMinutes = feedActivity.amount;
+        }
+        if (feedMinutes <= 0) return;
+
+        const dayKey = feedTime.toISOString().split('T')[0];
+        if (!byDay[dayKey]) byDay[dayKey] = { totalMinutes: 0, count: 0 };
+        byDay[dayKey].totalMinutes += feedMinutes;
+        byDay[dayKey].count++;
+      }
+    });
+
+    return Object.entries(byDay)
+      .map(([date, data]) => ({
+        date,
+        label: new Date(date + 'T12:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+        avg: data.count > 0 ? data.totalMinutes / data.count : 0,
+      }))
+      .sort((a, b) => (a.date < b.date ? -1 : 1));
+  }, [activities, dateRange, metric]);
+
+  // Calculate solids per-session data (avg amount per feed per day)
+  const solidsPerSessionData = useMemo(() => {
+    if (!activities.length || !dateRange.from || !dateRange.to || metric !== 'solidsPerSession') {
+      return [];
+    }
+
+    const startDate = new Date(dateRange.from);
+    startDate.setHours(0, 0, 0, 0);
+    const endDate = new Date(dateRange.to);
+    endDate.setHours(23, 59, 59, 999);
+
+    const byDay: Record<string, { totalAmount: number; count: number }> = {};
+
+    activities.forEach((activity) => {
+      if ('type' in activity && 'time' in activity) {
+        const feedActivity = activity as any;
+        if (feedActivity.type !== 'SOLIDS' || !feedActivity.amount) return;
+        const feedTime = new Date(feedActivity.time);
+        if (feedTime < startDate || feedTime > endDate) return;
+        const dayKey = feedTime.toISOString().split('T')[0];
+        if (!byDay[dayKey]) byDay[dayKey] = { totalAmount: 0, count: 0 };
+        byDay[dayKey].totalAmount += feedActivity.amount;
+        byDay[dayKey].count++;
+      }
+    });
+
+    return Object.entries(byDay)
+      .map(([date, data]) => ({
+        date,
+        label: new Date(date + 'T12:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+        avg: data.count > 0 ? data.totalAmount / data.count : 0,
+      }))
+      .sort((a, b) => (a.date < b.date ? -1 : 1));
+  }, [activities, dateRange, metric]);
+
   const getTitle = (): string => {
     switch (metric) {
       case 'bottle':
@@ -268,6 +382,12 @@ const FeedingChartModal: React.FC<FeedingChartModalProps> = ({
         return t('Breast Feeds Over Time');
       case 'solids':
         return t('Solids Feeds Over Time');
+      case 'bottlePerSession':
+        return t('Avg Bottle Amount Over Time');
+      case 'breastPerSession':
+        return t('Avg Breast Duration Over Time');
+      case 'solidsPerSession':
+        return t('Avg Solids Amount Over Time');
       default:
         return '';
     }
@@ -507,6 +627,145 @@ const FeedingChartModal: React.FC<FeedingChartModalProps> = ({
                       />
                     ))}
                   </ComposedChart>
+                </ResponsiveContainer>
+              </div>
+            )}
+          </>
+        )}
+
+        {metric === 'bottlePerSession' && (
+          <>
+            {bottlePerSessionData.length === 0 ? (
+              <div className={cn(styles.emptyContainer, 'reports-empty-container')}>
+                <p className={cn(styles.emptyText, 'reports-empty-text')}>
+                  {t('No bottle per-session data available for the selected date range.')}
+                </p>
+              </div>
+            ) : (
+              <div className={cn(growthChartStyles.chartWrapper, 'growth-chart-wrapper')}>
+                <ResponsiveContainer width="100%" height={400}>
+                  <LineChart data={bottlePerSessionData} margin={{ top: 20, right: 24, left: 8, bottom: 40 }}>
+                    <CartesianGrid strokeDasharray="3 3" className="growth-chart-grid" />
+                    <XAxis
+                      dataKey="label"
+                      angle={-30}
+                      textAnchor="end"
+                      height={60}
+                      className="growth-chart-axis"
+                    />
+                    <YAxis
+                      type="number"
+                      domain={[0, 'auto']}
+                      label={{ value: t('Avg Amount'), angle: -90, position: 'insideLeft' }}
+                      className="growth-chart-axis"
+                    />
+                    <RechartsTooltip
+                      formatter={(value: any) => [typeof value === 'number' ? value.toFixed(1) : value, t('Avg Amount')]}
+                      labelFormatter={(label: any) => `${t('Date:')} ${label}`}
+                    />
+                    <Line
+                      type="monotone"
+                      dataKey="avg"
+                      stroke="#6366f1"
+                      strokeWidth={2}
+                      dot={{ r: 4, fill: '#6366f1' }}
+                      activeDot={{ r: 6, fill: '#4f46e5' }}
+                      name={t('Avg Amount')}
+                    />
+                  </LineChart>
+                </ResponsiveContainer>
+              </div>
+            )}
+          </>
+        )}
+
+        {metric === 'breastPerSession' && (
+          <>
+            {breastPerSessionData.length === 0 ? (
+              <div className={cn(styles.emptyContainer, 'reports-empty-container')}>
+                <p className={cn(styles.emptyText, 'reports-empty-text')}>
+                  {t('No breast per-session data available for the selected date range.')}
+                </p>
+              </div>
+            ) : (
+              <div className={cn(growthChartStyles.chartWrapper, 'growth-chart-wrapper')}>
+                <ResponsiveContainer width="100%" height={400}>
+                  <LineChart data={breastPerSessionData} margin={{ top: 20, right: 24, left: 8, bottom: 40 }}>
+                    <CartesianGrid strokeDasharray="3 3" className="growth-chart-grid" />
+                    <XAxis
+                      dataKey="label"
+                      angle={-30}
+                      textAnchor="end"
+                      height={60}
+                      className="growth-chart-axis"
+                    />
+                    <YAxis
+                      type="number"
+                      domain={[0, 'auto']}
+                      tickFormatter={(value) => formatMinutes(value as number)}
+                      label={{ value: t('Avg Duration'), angle: -90, position: 'insideLeft' }}
+                      className="growth-chart-axis"
+                    />
+                    <RechartsTooltip
+                      formatter={(value: any) => [formatMinutes(value as number), t('Avg Duration')]}
+                      labelFormatter={(label: any) => `${t('Date:')} ${label}`}
+                    />
+                    <Line
+                      type="monotone"
+                      dataKey="avg"
+                      stroke="#ec4899"
+                      strokeWidth={2}
+                      dot={{ r: 4, fill: '#ec4899' }}
+                      activeDot={{ r: 6, fill: '#db2777' }}
+                      name={t('Avg Duration')}
+                    />
+                  </LineChart>
+                </ResponsiveContainer>
+              </div>
+            )}
+          </>
+        )}
+
+        {metric === 'solidsPerSession' && (
+          <>
+            {solidsPerSessionData.length === 0 ? (
+              <div className={cn(styles.emptyContainer, 'reports-empty-container')}>
+                <p className={cn(styles.emptyText, 'reports-empty-text')}>
+                  {t('No solids per-session data available for the selected date range.')}
+                </p>
+              </div>
+            ) : (
+              <div className={cn(growthChartStyles.chartWrapper, 'growth-chart-wrapper')}>
+                <ResponsiveContainer width="100%" height={400}>
+                  <LineChart data={solidsPerSessionData} margin={{ top: 20, right: 24, left: 8, bottom: 40 }}>
+                    <CartesianGrid strokeDasharray="3 3" className="growth-chart-grid" />
+                    <XAxis
+                      dataKey="label"
+                      angle={-30}
+                      textAnchor="end"
+                      height={60}
+                      className="growth-chart-axis"
+                    />
+                    <YAxis
+                      type="number"
+                      domain={[0, 'auto']}
+                      label={{ value: t('Avg Amount'), angle: -90, position: 'insideLeft' }}
+                      className="growth-chart-axis"
+                    />
+                    <RechartsTooltip
+                      formatter={(value: any) => [typeof value === 'number' ? value.toFixed(1) : value, t('Avg Amount')]}
+                      labelFormatter={(label: any) => `${t('Date:')} ${label}`}
+                    />
+                    <Line
+                      type="monotone"
+                      dataKey="avg"
+                      stroke="#f59e0b"
+                      strokeWidth={2}
+                      dot={{ r: 4, fill: '#f59e0b' }}
+                      activeDot={{ r: 6, fill: '#d97706' }}
+                      name={t('Avg Amount')}
+                    />
+                  </LineChart>
                 </ResponsiveContainer>
               </div>
             )}
