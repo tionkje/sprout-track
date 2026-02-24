@@ -638,6 +638,16 @@ export function ActivityTileGroup({
                 onPumpClick();
               }}
             />
+            {selectedBaby?.id && lastPumpTime[selectedBaby.id] && !exceeds24Hours(lastPumpTime[selectedBaby.id]) && (
+              <StatusBubble
+                status="pump"
+                className="overflow-visible z-40"
+                durationInMinutes={0}
+                startTime={lastPumpTime[selectedBaby.id].toISOString()}
+                warningTime="03:00"
+                activityType="pump"
+              />
+            )}
           </div>
         );
       case 'measurement':

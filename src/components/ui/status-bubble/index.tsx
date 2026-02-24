@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { Moon, Sun, Icon } from 'lucide-react';
+import { Moon, Sun, Icon, LampWallDown } from 'lucide-react';
 import { diaper, bottleBaby } from '@lucide/lab';
 import { cn } from "@/src/lib/utils";
 import { statusBubbleStyles as styles } from './status-bubble.styles';
@@ -44,7 +44,8 @@ export function StatusBubble({
             (status === 'sleeping' && activityType === 'sleep') || 
             (status === 'awake' && activityType === 'sleep') ||
             (status === 'feed' && activityType === 'feed') ||
-            (status === 'diaper' && activityType === 'diaper')) {
+            (status === 'diaper' && activityType === 'diaper') ||
+            (status === 'pump' && activityType === 'pump')) {
           const diffMinutes = calculateDurationMinutes(startTime, now.toISOString());
           setCalculatedDuration(diffMinutes);
         }
@@ -113,6 +114,11 @@ export function StatusBubble({
         return {
           bgColor: isWarning ? styles.statusStyles.diaper.warning : styles.statusStyles.diaper.normal,
           icon: <Icon iconNode={diaper} className={styles.icon} />
+        };
+      case 'pump':
+        return {
+          bgColor: isWarning ? styles.statusStyles.pump.warning : styles.statusStyles.pump.normal,
+          icon: <LampWallDown className={styles.icon} />
         };
       default:
         return {
