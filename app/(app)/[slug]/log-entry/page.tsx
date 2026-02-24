@@ -52,6 +52,7 @@ function HomeContent(): React.ReactElement {
   const [lastSleepEndTime, setLastSleepEndTime] = useState<Record<string, Date>>({});
   const [lastFeedTime, setLastFeedTime] = useState<Record<string, Date>>({});
   const [lastDiaperTime, setLastDiaperTime] = useState<Record<string, Date>>({});
+  const [lastPumpTime, setLastPumpTime] = useState<Record<string, Date>>({});
 
   // Track the currently selected date in the Timeline component
   const [selectedTimelineDate, setSelectedTimelineDate] = useState<Date | null>(null);
@@ -202,6 +203,22 @@ function HomeContent(): React.ReactElement {
           }));
         }
         
+        // Update last pump time
+        const lastPump = timelineData.data
+          .filter((activity: ActivityType) =>
+            'leftAmount' in activity || 'rightAmount' in activity || 'totalAmount' in activity
+          )
+          .filter((activity: ActivityType) => 'startTime' in activity && !('type' in activity && (activity.type === 'NAP' || activity.type === 'NIGHT_SLEEP')))
+          .sort((a: PumpLogResponse, b: PumpLogResponse) =>
+            new Date(b.startTime).getTime() - new Date(a.startTime).getTime()
+          )[0];
+        if (lastPump) {
+          setLastPumpTime(prev => ({
+            ...prev,
+            [babyId]: new Date(lastPump.startTime)
+          }));
+        }
+
         // Update last sleep end time - only consider sleep activities
         const completedSleeps = timelineData.data
           .filter((activity: ActivityType): activity is SleepLogResponse & { endTime: string } => 
@@ -366,6 +383,7 @@ function HomeContent(): React.ReactElement {
           lastSleepEndTime={lastSleepEndTime}
           lastFeedTime={lastFeedTime}
           lastDiaperTime={lastDiaperTime}
+          lastPumpTime={lastPumpTime}
           updateUnlockTimer={updateUnlockTimer}
           onSleepClick={() => setShowSleepModal(true)}
           onFeedClick={() => setShowFeedModal(true)}

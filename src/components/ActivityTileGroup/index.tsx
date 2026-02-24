@@ -24,6 +24,7 @@ interface ActivityTileGroupProps {
   lastSleepEndTime: Record<string, Date>;
   lastFeedTime: Record<string, Date>;
   lastDiaperTime: Record<string, Date>;
+  lastPumpTime: Record<string, Date>;
   updateUnlockTimer: () => void;
   onSleepClick: () => void;
   onFeedClick: () => void;
@@ -52,6 +53,7 @@ export function ActivityTileGroup({
   lastSleepEndTime,
   lastFeedTime,
   lastDiaperTime,
+  lastPumpTime,
   updateUnlockTimer,
   onSleepClick,
   onFeedClick,
@@ -604,6 +606,16 @@ export function ActivityTileGroup({
                 onPumpClick();
               }}
             />
+            {selectedBaby?.id && lastPumpTime[selectedBaby.id] && !exceeds24Hours(lastPumpTime[selectedBaby.id]) && (
+              <StatusBubble
+                status="pump"
+                className="overflow-visible z-40"
+                durationInMinutes={0}
+                startTime={lastPumpTime[selectedBaby.id].toISOString()}
+                warningTime="03:00"
+                activityType="pump"
+              />
+            )}
           </div>
         );
       case 'measurement':
