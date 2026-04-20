@@ -25,6 +25,7 @@ interface ActivityTileGroupProps {
   lastSleepEndTime: Record<string, Date>;
   lastFeedTime: Record<string, Date>;
   lastDiaperTime: Record<string, Date>;
+  lastPumpTime: Record<string, Date>;
   feedStartTime?: Record<string, Date>;
   updateUnlockTimer: () => void;
   onSleepClick: () => void;
@@ -57,6 +58,7 @@ export function ActivityTileGroup({
   lastSleepEndTime,
   lastFeedTime,
   lastDiaperTime,
+  lastPumpTime,
   feedStartTime,
   updateUnlockTimer,
   onSleepClick,

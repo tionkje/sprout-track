@@ -74,6 +74,19 @@ const TimelineV2 = ({ babyId, refreshTrigger, onLatestStatusReady, onActivityDel
       status.lastDiaperTime = new Date((lastDiaper as any).time);
     }
 
+    // Find last pump time
+    const lastPump = activities
+      .filter((a) =>
+        ('leftAmount' in a || 'rightAmount' in a || 'totalAmount' in a) &&
+        'startTime' in a &&
+        !('type' in a && ((a as any).type === 'NAP' || (a as any).type === 'NIGHT_SLEEP'))
+      )
+      .sort((a, b) => new Date((b as any).startTime).getTime() - new Date((a as any).startTime).getTime())[0];
+
+    if (lastPump) {
+      status.lastPumpTime = new Date((lastPump as any).startTime);
+    }
+
     // Find sleep status
     const sleepLogs = activities
       .filter((a): a is ActivityType =>
